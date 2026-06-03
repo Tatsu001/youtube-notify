@@ -27,7 +27,7 @@ from .state import (
     record_video,
     save_state,
 )
-from .transcripts import get_transcript
+from .transcripts import TranscriptBlocked, get_transcript
 from .tts import synthesize_with_fallback
 from .utils import AUDIO_DIR, ensure_dirs, log
 
@@ -134,11 +134,14 @@ def run() -> int:
 
     any_change = False
     processed_count = 0
+    blocked_count = 0  # 字幕取得がブロックされた件数（恒久スキップせず次回再試行）
 
     for ch in channels:
         channel_id = ch["id"]
         try:
-            channel_name, videos = fetch_channel_videos(channel_id, ch.get("name", ""))
+            channel_name, videos = fetch_channel_videos(
+                channel_id, ch.get("name", ""), exclude_shorts=settings.exclude_shorts
+            )
         except Exception as exc:  # noqa: BLE001
             log.error("チャンネル取得失敗 %s: %s", channel_id, exc)
             notify.notify_error(settings, f"RSS取得失敗 / {channel_id}", str(exc))
@@ -165,6 +168,11 @@ def run() -> int:
                     processed_count += 1
                 # 各動画ごとに state を保存（途中で落ちても進捗を残す）
                 save_state(state)
+            except TranscriptBlocked:
+                # 字幕取得がブロック/失敗。記録せず次回再試行（誤って恒久スキップしない）。
+                blocked_count += 1
+                log.warning("字幕取得ブロック（未記録・次回再試行）: %s", video.video_id)
+                continue
             except GeminiUnavailable as exc:
                 log.error("Gemini利用不可のため生成中断: %s", exc)
                 notify.notify_error(settings, "Gemini利用不可", str(exc))
@@ -178,6 +186,15 @@ def run() -> int:
                 )
                 # 失敗動画は processed に入れない（次回再試行される）。次の動画へ。
                 continue
+
+    # 字幕ブロックがあれば実行ごとに1通だけ集約通知（動画ごとの通知スパムを避ける）
+    if blocked_count:
+        notify.notify_error(
+            settings,
+            "字幕取得が一時的にブロックされました",
+            f"{blocked_count}件の動画で字幕を取得できませんでした（YouTube側のIP制限の可能性）。"
+            f"記録せず次回実行で自動リトライします。",
+        )
 
     # サイト・フィードの再生成（新着が無くても保持ポリシー反映のため毎回実施）
     retention_changed = apply_audio_retention(settings, state)

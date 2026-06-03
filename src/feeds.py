@@ -39,6 +39,11 @@ class Video:
     channel_name: str
 
 
+def _is_short(video: "Video") -> bool:
+    """YouTube Shorts かどうか（URLに /shorts/ を含むか）。"""
+    return "/shorts/" in (video.url or "")
+
+
 # ---------------------------------------------------------------------------
 # 第一候補: RSSフィード
 # ---------------------------------------------------------------------------
@@ -134,18 +139,28 @@ def _fetch_via_ytdlp(channel_id: str, fallback_name: str, limit: int = 20) -> tu
 # ---------------------------------------------------------------------------
 # 公開API
 # ---------------------------------------------------------------------------
-def fetch_channel_videos(channel_id: str, fallback_name: str = "") -> tuple[str, list[Video]]:
+def fetch_channel_videos(
+    channel_id: str, fallback_name: str = "", exclude_shorts: bool = True
+) -> tuple[str, list[Video]]:
     """チャンネルの動画一覧（新しい順）とチャンネル名を返す。
 
     RSS → yt-dlp の順で試し、両方失敗したら例外を送出する。
+    exclude_shorts=True のとき YouTube Shorts は除外する。
     """
+    source = "RSS"
     try:
         name, videos = _fetch_via_rss(channel_id, fallback_name)
-        log.info("チャンネル '%s' から %d 件取得（RSS）", name, len(videos))
-        return name, videos
     except Exception as rss_exc:  # noqa: BLE001
         log.warning("RSS取得失敗（yt-dlpへフォールバック）: %s", rss_exc)
+        source = "yt-dlp"
+        name, videos = _fetch_via_ytdlp(channel_id, fallback_name)
 
-    name, videos = _fetch_via_ytdlp(channel_id, fallback_name)
-    log.info("チャンネル '%s' から %d 件取得（yt-dlp）", name, len(videos))
+    if exclude_shorts:
+        before = len(videos)
+        videos = [v for v in videos if not _is_short(v)]
+        removed = before - len(videos)
+        if removed:
+            log.info("Shortsを %d 件除外", removed)
+
+    log.info("チャンネル '%s' から %d 件取得（%s）", name, len(videos), source)
     return name, videos
