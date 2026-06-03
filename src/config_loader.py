@@ -83,6 +83,11 @@ class Settings:
         return int(self.get("generation.max_per_run", 3))
 
     @property
+    def initial_generate_count(self) -> int:
+        """新規チャンネル初回実行で生成する最新動画の本数（残りはシード）。"""
+        return int(self.get("generation.initial_count", 1))
+
+    @property
     def tts_priority(self) -> list[str]:
         return list(self.get("tts.priority", ["gemini", "edge"]))
 

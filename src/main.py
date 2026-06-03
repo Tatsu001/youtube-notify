@@ -106,9 +106,8 @@ def _process_video(settings: Settings, state: dict, video: Video) -> bool:
     return True
 
 
-def _seed_channel(state: dict, channel_id: str, channel_name: str, videos: list[Video]) -> None:
-    """新規チャンネルの現状動画を「処理済み(seed)」として記録（生成しない）。"""
-    log.info("新規チャンネル '%s' を初期化（既存%d件をシード・生成なし）", channel_name, len(videos))
+def _seed_videos(state: dict, videos: list[Video]) -> None:
+    """指定動画を「処理済み(seed)」として記録（生成しない）。"""
     for v in videos:
         if not is_processed(state, v.video_id):
             record_video(state, v.video_id, {
@@ -121,7 +120,6 @@ def _seed_channel(state: dict, channel_id: str, channel_name: str, videos: list[
                 "status": "seed",
                 "has_audio": False,
             })
-    mark_channel_initialized(state, channel_id)
 
 
 def run() -> int:
@@ -154,21 +152,30 @@ def run() -> int:
             notify.notify_error(settings, f"RSS取得失敗 / {channel_id}", str(exc))
             continue
 
-        # 初回はシードのみ
+        # 生成対象（古い順）を決定する
         if not is_channel_initialized(state, channel_id):
-            _seed_channel(state, channel_id, channel_name, videos)
+            # 初回: 最新 initial_count 本を生成し、残りの既存動画はシード（生成しない）。
+            init_count = settings.initial_generate_count
+            newest = videos[:init_count]      # フィードは新しい順
+            backlog = videos[init_count:]
+            log.info("新規チャンネル '%s' を初期化（最新%d本を生成 / 残り%d本はシード）",
+                     channel_name, len(newest), len(backlog))
+            _seed_videos(state, backlog)
+            mark_channel_initialized(state, channel_id)
             any_change = True
+            save_state(state)
+            gen_list = list(reversed(newest))  # 古い順に生成
+        else:
+            # 以降は差分（未処理の新着のみ）を古い順に
+            gen_list = [v for v in videos if not is_processed(state, v.video_id)]
+            gen_list.sort(key=lambda v: v.published)
+
+        if not gen_list:
+            log.info("チャンネル '%s' に生成対象なし", channel_name)
             continue
 
-        # 新着抽出（古い順に処理して時系列を保つ）
-        new_videos = [v for v in videos if not is_processed(state, v.video_id)]
-        new_videos.sort(key=lambda v: v.published)  # 古い順
-        if not new_videos:
-            log.info("チャンネル '%s' に新着なし", channel_name)
-            continue
-
-        log.info("チャンネル '%s' の新着 %d 件を処理", channel_name, len(new_videos))
-        for video in new_videos:
+        log.info("チャンネル '%s' の生成対象 %d 件を処理", channel_name, len(gen_list))
+        for video in gen_list:
             # 1実行あたりの生成上限。超過分は記録せず次回実行で続きから処理する。
             if max_per_run and processed_count >= max_per_run:
                 log.info("1実行あたりの生成上限(%d)に到達。残りは次回実行で処理します。", max_per_run)
