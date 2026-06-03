@@ -4,10 +4,22 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import feedparser
+import requests
 
 from .utils import log, retry
 
 RSS_URL = "https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
+
+# feedparser の既定UAだと YouTube が稀に同意/エラーHTMLを返すため、
+# ブラウザ相当のヘッダを付けて requests で明示的に取得する。
+_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/atom+xml,application/xml,text/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "ja,en;q=0.8",
+}
 
 
 @dataclass
@@ -20,12 +32,26 @@ class Video:
     channel_name: str
 
 
-@retry(attempts=4, base_delay=2.0)
+@retry(attempts=4, base_delay=2.0, exceptions=(RuntimeError, requests.exceptions.RequestException))
+def _fetch_feed_text(url: str) -> str:
+    """フィードをHTTP取得し、XMLであることを確認して本文を返す。"""
+    resp = requests.get(url, headers=_HEADERS, timeout=30)
+    if resp.status_code != 200:
+        raise RuntimeError(f"HTTP {resp.status_code}")
+    text = resp.text
+    head = text.lstrip()[:300].lower()
+    # XMLでない（HTMLの同意/エラーページ等）場合はリトライ対象として明示的に失敗させる
+    if not (head.startswith("<?xml") or "<feed" in head):
+        snippet = " ".join(text.split())[:120]
+        raise RuntimeError(f"XMLフィードではない応答: {snippet}")
+    return text
+
+
 def _parse_feed(url: str):
-    parsed = feedparser.parse(url)
-    # feedparser はネットワークエラーでも例外を投げず bozo フラグを立てるので明示的に判定
+    text = _fetch_feed_text(url)
+    parsed = feedparser.parse(text)
     if getattr(parsed, "bozo", 0) and not parsed.entries:
-        raise RuntimeError(f"フィード取得失敗: {getattr(parsed, 'bozo_exception', 'unknown')}")
+        raise RuntimeError(f"フィード解析失敗: {getattr(parsed, 'bozo_exception', 'unknown')}")
     return parsed
 
 
