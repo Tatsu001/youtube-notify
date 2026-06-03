@@ -1,4 +1,197 @@
 {
-  "initialized_channels": [],
-  "processed": {}
+  "initialized_channels": [
+    "UCAN0E9cZN7n22Ka1-TuVb-Q"
+  ],
+  "processed": {
+    "tw1xexTcqjs": {
+      "title": "【松田学のニュース解説】高市人気に翳り？国論二分テーマの行方＆食品消費税など",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=tw1xexTcqjs",
+      "generated_at": "2026-06-03T04:47:55.191542+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "qmPaRcy0v0M": {
+      "title": "【松田学のニュース解説】進まぬ合意とままならない米・イラン紛争＆ウ戦争終結間近？",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=qmPaRcy0v0M",
+      "generated_at": "2026-06-03T04:47:55.191558+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "VeSH2pczq2A": {
+      "title": "特番『ウクライナ戦争と欧州、弱腰のトランプ氏と強まる中露枢軸』ゲスト：岐阜女子大学特別客員教授　元陸上自衛隊陸将補　矢野義昭氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=VeSH2pczq2A",
+      "generated_at": "2026-06-03T04:47:55.191563+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "sJTMO8q0jBk": {
+      "title": "特番『最新イラン情勢　どうなる米・イラン紛争の行方』ゲスト：岐阜女子大学特別客員教授　元陸上自衛隊陸将補　矢野義昭氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=sJTMO8q0jBk",
+      "generated_at": "2026-06-03T04:47:55.191567+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "dhYgEZwo-FU": {
+      "title": "特番「山岡鉄秀氏が警告！日本存続プランBを大至急策定せよ！」参議院議員、松田政策研究所代表　松田学　×　情報戦略アナリスト　山岡鉄秀氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=dhYgEZwo-FU",
+      "generated_at": "2026-06-03T04:47:55.191571+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "t-AzAhLvIa0": {
+      "title": "特番『川口マーン惠美さん登場！その２　”脱炭素”と”脱原発”で苦しむドイツの財政状況』ゲスト：川口マーン惠美氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=t-AzAhLvIa0",
+      "generated_at": "2026-06-03T04:47:55.191575+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "IkK4zz0jLp4": {
+      "title": "特番『川口マーン惠美さん登場！その１　ドイツの政界の今！ドイツのための選択肢（AfD）躍進の理由とは？』ゲスト：川口マーン惠美氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=IkK4zz0jLp4",
+      "generated_at": "2026-06-03T04:47:55.191578+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "vO1efsukmzI": {
+      "title": "【松田学のニュース解説】党内基盤固めが進む？高市総理の動向＆ナフサ問題・消費減税・国旗棄損罪・AIなど国内政治情勢",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=vO1efsukmzI",
+      "generated_at": "2026-06-03T04:47:55.191583+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "8jceCOmo9SQ": {
+      "title": "【松田学のニュース解説】再攻撃間近？米イラン交渉と台湾で揺らぐ米中関係＆中華帝国の復活",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=8jceCOmo9SQ",
+      "generated_at": "2026-06-03T04:47:55.191587+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "cX7LgmT5GZQ": {
+      "title": "特番『中東情勢混乱でどうなる！？石油の行方と今後の日本政府の対応』ゲスト：経済産業研究所主席研究員　藤　和彦氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=cX7LgmT5GZQ",
+      "generated_at": "2026-06-03T04:47:55.191591+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "IvXgznkpjv4": {
+      "title": "特番『中道改革連合　落合貴之衆議院議員と語る！反グローバリズムなど意外と共通項が多い！議論を重ねて野党パワー強化を！～憲法改正、皇位継承、武器輸出問題など～」ゲスト：中道改革連合　衆議院議員　落合貴之",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=IvXgznkpjv4",
+      "generated_at": "2026-06-03T04:47:55.191594+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "SwLAS2QhDfM": {
+      "title": "特番「ノンフィクション作家　さかきゆいさん登場！天才たちの仲間割れ、AI覇権と日本の未来」参議院議員、松田政策研究所代表　松田学　　×　　ノンフィクション作家　さかきゆい氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=SwLAS2QhDfM",
+      "generated_at": "2026-06-03T04:47:55.191598+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "WquCkb60xBk": {
+      "title": "【松田学のニュース解説】恐るべし！閉じこもり総理～高市政権の最新動向と今国会重要政策の解説～",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=WquCkb60xBk",
+      "generated_at": "2026-06-03T04:47:55.191601+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "0KhrNiDwyuU": {
+      "title": "【松田学のニュース解説】イランへ再攻撃？核問題で手打ち？真の勝者は？露ウ戦争は？世界の軍事情勢",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=0KhrNiDwyuU",
+      "generated_at": "2026-06-03T04:47:55.191604+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "KxxrF5K3-M0": {
+      "title": "【松田学のニュース解説】勝者は習近平氏？米中首脳会談が示した両国の力関係＆米欧政治情勢",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=KxxrF5K3-M0",
+      "generated_at": "2026-06-03T04:47:55.191608+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "CUeJRRK-2s4": {
+      "title": "特番『愚行も甚だしい日米関税合意 日本政府を改めて断罪する（その1）」ゲスト：大阪市立大学名誉教授・経済学博士　山下英次氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=CUeJRRK-2s4",
+      "generated_at": "2026-06-03T04:47:55.191612+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "ae3zaoADH0U": {
+      "title": "特番『防衛装備移転三原則 5類型の廃止は日本にとってチャンスである！』ノンフィクション作家　さかきゆい氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=ae3zaoADH0U",
+      "generated_at": "2026-06-03T04:47:55.191615+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "cV0BiPMQdm0": {
+      "title": "特番『与党による衆院議員の定数比例45議席削減は”参政党”潰しだ！』ノンフィクション作家　さかきゆい氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=cV0BiPMQdm0",
+      "generated_at": "2026-06-03T04:47:55.191618+00:00",
+      "status": "seed",
+      "has_audio": false
+    },
+    "IvlQMA3qoJg": {
+      "title": "特番『オールドメディアの偏向報道極まれり！～辺野古沖転覆事故報道から見えるものとは～』報道アナリスト　新田哲史氏",
+      "published": "",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=IvlQMA3qoJg",
+      "generated_at": "2026-06-03T04:47:55.191622+00:00",
+      "status": "seed",
+      "has_audio": false
+    }
+  }
 }
