@@ -69,6 +69,8 @@ gemini:
   text_model: "gemini-2.5-flash"
   tts_model: "gemini-2.5-flash-preview-tts"
   media_resolution: "low"   # 動画解像度 low/medium/high（lowで無料枠トークンを節約）
+  max_output_tokens: 32768  # 出力上限（台本+長文記事が途中で切れないよう十分に）
+  thinking_budget: 8192     # 思考トークン上限（出力枠を圧迫しない範囲に抑制）
   script_max_chars: 3500    # 対話台本の目安上限（長すぎるとTTS負荷が増える）
   article_min_chars: 3000   # 読み物記事の目安下限
   article_max_chars: 6000   # 読み物記事の目安上限

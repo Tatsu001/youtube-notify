@@ -153,12 +153,12 @@ def test_generate_pipeline() -> None:
     from src.generation import QuotaExceeded, VideoNotAccessible, generate
 
     settings = load_settings()
-    # 無料枠節約のため短いニュースクリップ1本で本番コードパスを検証
-    vid = "Vsai2xEN_ho"
+    # 出力途中切れが起きた長尺動画（約1時間）で本番コードパス＋トークン上限修正を検証
+    vid = "A9z1ETVfRH0"
     video = Video(
-        video_id=vid, title="（診断）TBSニュース短編",
+        video_id=vid, title="（診断）松田学・長尺解説",
         published="", url=f"https://www.youtube.com/watch?v={vid}",
-        channel_id="UC6AG81pAkf6Lbi_1VC5NmPA", channel_name="TBS NEWS DIG",
+        channel_id="UCAN0E9cZN7n22Ka1-TuVb-Q", channel_name="松田政策研究所チャンネル",
     )
     try:
         c = generate(settings, video)
