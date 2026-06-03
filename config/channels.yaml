@@ -7,3 +7,5 @@
 channels:
   - id: "UCAN0E9cZN7n22Ka1-TuVb-Q"
     name: ""   # 空ならRSSのタイトルから自動取得
+  - id: "UC6AG81pAkf6Lbi_1VC5NmPA"
+    name: "TBS NEWS DIG"   # @tbsnewsdig（テスト用に追加）
