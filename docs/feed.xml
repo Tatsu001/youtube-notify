@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>YouTube解説ポッドキャスト</title>
+    <link>https://tatsu001.github.io/youtube-notify/</link>
+    <language>ja</language>
+    <description>気になるYouTube動画を、2人のホストがカジュアルに解説するポッドキャストと読み物記事。</description>
+    <itunes:author>youtube-notify</itunes:author>
+    <itunes:summary>気になるYouTube動画を、2人のホストがカジュアルに解説するポッドキャストと読み物記事。</itunes:summary>
+    <itunes:owner>
+      <itunes:name>youtube-notify</itunes:name>
+    </itunes:owner>
+    <itunes:image href="https://tatsu001.github.io/youtube-notify/cover.png"/>
+    <itunes:category text="Technology"/>
+    <itunes:explicit>false</itunes:explicit>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="https://tatsu001.github.io/youtube-notify/feed.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Wed, 03 Jun 2026 03:12:20 +0000</lastBuildDate>
+
+  </channel>
+</rss>
