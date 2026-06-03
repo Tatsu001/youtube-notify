@@ -15,7 +15,12 @@ from datetime import datetime, timezone
 from . import notify
 from .config_loader import Settings, load_channels, load_settings
 from .feeds import Video, fetch_channel_videos
-from .generation import GeminiUnavailable, generate
+from .generation import (
+    GeminiUnavailable,
+    QuotaExceeded,
+    VideoNotAccessible,
+    generate,
+)
 from .retention import apply_audio_retention
 from .rss import render_feed
 from .site import render_episode, render_index
@@ -27,7 +32,6 @@ from .state import (
     record_video,
     save_state,
 )
-from .transcripts import TranscriptBlocked, get_transcript
 from .tts import synthesize_with_fallback
 from .utils import AUDIO_DIR, ensure_dirs, log
 
@@ -40,10 +44,13 @@ def _process_video(settings: Settings, state: dict, video: Video) -> bool:
     """1本の動画を処理。生成して記録できたらTrue（要サイト再生成）。"""
     log.info("=== 新着動画を処理: [%s] %s ===", video.video_id, video.title)
 
-    # 1. 字幕取得
-    transcript = get_transcript(video.video_id)
-    if not transcript:
-        # 字幕なし → スキップ記録（無限リトライ防止）＋通知
+    # 1+2. Gemini生成（動画URLを直接視聴して台本/記事/ティーザーを生成）
+    #   QuotaExceeded は呼び出し側へ伝播（実行を打ち切り次回に回す）。
+    try:
+        content = generate(settings, video)
+    except VideoNotAccessible as exc:
+        # 非公開/年齢制限/限定公開などGeminiから視聴できない動画 → スキップ記録＋通知
+        log.warning("動画を視聴できずスキップ: %s (%s)", video.video_id, exc)
         notify.notify_skip(settings, video.title, video.url)
         record_video(state, video.video_id, {
             "title": video.title,
@@ -54,12 +61,9 @@ def _process_video(settings: Settings, state: dict, video: Video) -> bool:
             "generated_at": _now_iso(),
             "status": "skipped",
             "has_audio": False,
-            "reason": "no_transcript",
+            "reason": "video_not_accessible",
         })
         return True  # state変更あり（コミット対象）
-
-    # 2. Gemini生成（台本/記事/ティーザー）
-    content = generate(settings, video, transcript)
 
     # 3. TTS音声化
     os.makedirs(AUDIO_DIR, exist_ok=True)
@@ -134,9 +138,12 @@ def run() -> int:
 
     any_change = False
     processed_count = 0
-    blocked_count = 0  # 字幕取得がブロックされた件数（恒久スキップせず次回再試行）
+    max_per_run = settings.max_generations_per_run  # 無料枠保護のため1実行あたり上限
+    stop_run = False  # 429到達やキー未設定で実行全体を打ち切る
 
     for ch in channels:
+        if stop_run:
+            break
         channel_id = ch["id"]
         try:
             channel_name, videos = fetch_channel_videos(
@@ -162,21 +169,29 @@ def run() -> int:
 
         log.info("チャンネル '%s' の新着 %d 件を処理", channel_name, len(new_videos))
         for video in new_videos:
+            # 1実行あたりの生成上限。超過分は記録せず次回実行で続きから処理する。
+            if max_per_run and processed_count >= max_per_run:
+                log.info("1実行あたりの生成上限(%d)に到達。残りは次回実行で処理します。", max_per_run)
+                stop_run = True
+                break
             try:
                 if _process_video(settings, state, video):
                     any_change = True
                     processed_count += 1
                 # 各動画ごとに state を保存（途中で落ちても進捗を残す）
                 save_state(state)
-            except TranscriptBlocked:
-                # 字幕取得がブロック/失敗。記録せず次回再試行（誤って恒久スキップしない）。
-                blocked_count += 1
-                log.warning("字幕取得ブロック（未記録・次回再試行）: %s", video.video_id)
-                continue
+            except QuotaExceeded as exc:
+                log.warning("Gemini無料枠の上限(429)。実行を打ち切り次回に回します: %s", exc)
+                notify.notify_error(
+                    settings, "Gemini無料枠の上限(429)に到達",
+                    "今回はここまで生成しました。残りは次回実行で続きから自動的に処理します。",
+                )
+                stop_run = True
+                break
             except GeminiUnavailable as exc:
                 log.error("Gemini利用不可のため生成中断: %s", exc)
                 notify.notify_error(settings, "Gemini利用不可", str(exc))
-                # キーが無い等は他動画も同様に失敗するので打ち切る
+                stop_run = True
                 break
             except Exception as exc:  # noqa: BLE001
                 log.error("動画処理で例外 [%s]: %s\n%s",
@@ -186,15 +201,6 @@ def run() -> int:
                 )
                 # 失敗動画は processed に入れない（次回再試行される）。次の動画へ。
                 continue
-
-    # 字幕ブロックがあれば実行ごとに1通だけ集約通知（動画ごとの通知スパムを避ける）
-    if blocked_count:
-        notify.notify_error(
-            settings,
-            "字幕取得が一時的にブロックされました",
-            f"{blocked_count}件の動画で字幕を取得できませんでした（YouTube側のIP制限の可能性）。"
-            f"記録せず次回実行で自動リトライします。",
-        )
 
     # サイト・フィードの再生成（新着が無くても保持ポリシー反映のため毎回実施）
     retention_changed = apply_audio_retention(settings, state)

@@ -143,38 +143,40 @@ def test_gemini() -> None:
         line(f"[FAIL] {type(e).__name__}: {str(e)[:200]}")
 
 
-def test_gemini_youtube() -> None:
-    header("5. Gemini × YouTube URL 直接理解（最重要・代替案の検証）")
+def test_generate_pipeline() -> None:
+    header("5. 本番 generate()（動画URL→台本/記事/ティーザー・JSON構造化）")
     if not os.environ.get("GEMINI_API_KEY"):
         line("[SKIP] GEMINI_API_KEY 未設定")
         return
-    from google import genai
-    from google.genai import types
     from src.config_loader import load_settings
+    from src.feeds import Video
+    from src.generation import QuotaExceeded, VideoNotAccessible, generate
 
-    model = load_settings().get("gemini.text_model", "gemini-2.5-flash")
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-
-    # 短い動画（TBSニュース）と長い動画（松田トーク）の両方で、長さ上限の有無も確認
-    for label, vid in TEST_VIDEOS:
-        url = f"https://www.youtube.com/watch?v={vid}"
-        try:
-            resp = client.models.generate_content(
-                model=model,
-                contents=types.Content(parts=[
-                    types.Part(file_data=types.FileData(file_uri=url)),
-                    types.Part(text="この動画の内容を日本語で2〜3文で具体的に要約してください。"),
-                ]),
-            )
-            txt = (resp.text or "").strip().replace("\n", " ")
-            line(f"[{'PASS' if txt else 'FAIL'}] {label} {vid}: {txt[:240]}")
-        except Exception as e:  # noqa: BLE001
-            line(f"[FAIL] {label} {vid}: {type(e).__name__}: {str(e)[:280]}")
+    settings = load_settings()
+    # 無料枠節約のため短いニュースクリップ1本で本番コードパスを検証
+    vid = "Vsai2xEN_ho"
+    video = Video(
+        video_id=vid, title="（診断）TBSニュース短編",
+        published="", url=f"https://www.youtube.com/watch?v={vid}",
+        channel_id="UC6AG81pAkf6Lbi_1VC5NmPA", channel_name="TBS NEWS DIG",
+    )
+    try:
+        c = generate(settings, video)
+        first = c.script[0]["text"][:50] if c.script else ""
+        line(f"[PASS] 台本{len(c.script)}ターン / 記事{len(c.article_html)}字 / ティーザー{len(c.teaser)}字")
+        line(f"       冒頭セリフ: {first!r}")
+        line(f"       ティーザー: {c.teaser[:80]!r}")
+    except QuotaExceeded as e:
+        line(f"[QUOTA] 無料枠上限(429)に到達: {str(e)[:160]}（本番では次回実行で続行）")
+    except VideoNotAccessible as e:
+        line(f"[SKIP] 動画視聴不可: {str(e)[:160]}")
+    except Exception as e:  # noqa: BLE001
+        line(f"[FAIL] {type(e).__name__}: {str(e)[:280]}")
 
 
 def main() -> None:
     line("YouTube-notify 技術検証 / 診断")
-    for fn in (test_env, test_rss_direct, test_fetch_channel, test_transcripts, test_gemini, test_gemini_youtube):
+    for fn in (test_env, test_rss_direct, test_fetch_channel, test_transcripts, test_gemini, test_generate_pipeline):
         try:
             fn()
         except Exception:  # noqa: BLE001

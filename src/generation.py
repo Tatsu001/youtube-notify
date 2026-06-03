@@ -1,6 +1,7 @@
 """Gemini API による日本語コンテンツ生成。
 
-1回の構造化呼び出しで以下を生成:
+YouTube動画のURLを Gemini に直接渡し（Google側が動画を取得するため、
+GitHub ActionsのIPブロックを受けない）、動画を視聴させて以下を一度に生成する:
   (A) 2人ホストのカジュアル対話台本（音声用）
   (B) 長文の読み物記事（Web記事用 / HTML本文）
   (C) LINE用の短いティーザー文
@@ -26,6 +27,14 @@ class GeminiUnavailable(RuntimeError):
     """GEMINI_API_KEY未設定やSDK未導入などで利用できない場合。"""
 
 
+class QuotaExceeded(RuntimeError):
+    """Geminiの無料枠レート上限(429)に達した場合。実行を打ち切って次回に回す。"""
+
+
+class VideoNotAccessible(RuntimeError):
+    """動画が非公開/年齢制限/限定公開などでGeminiから視聴できない場合。"""
+
+
 def _get_client():
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
@@ -42,10 +51,10 @@ def _get_client():
     return genai.Client(api_key=api_key)
 
 
-def _build_prompt(s: Settings, video, transcript: str) -> str:
+def _build_prompt(s: Settings, video) -> str:
     hosts = s.hosts
     h1 = hosts[0] if hosts else None
-    h2 = hosts[1] if len(hosts) > 1 else hosts[0]
+    h2 = hosts[1] if len(hosts) > 1 else (hosts[0] if hosts else None)
     h1_name = h1.name if h1 else "ナミ"
     h2_name = h2.name if h2 else "ケンタ"
     h1_role = h1.role if h1 else "聞き手"
@@ -55,22 +64,17 @@ def _build_prompt(s: Settings, video, transcript: str) -> str:
     art_min = s.get("gemini.article_min_chars", 3000)
     art_max = s.get("gemini.article_max_chars", 6000)
 
-    # 文字起こしが極端に長い場合は先頭を中心に抑える（無料枠のトークン配慮）
-    max_src = 18000
-    src = transcript if len(transcript) <= max_src else (transcript[:max_src] + " …（以下略）")
-
     return f"""あなたは優秀な日本語のコンテンツ編集者兼ポッドキャスト構成作家です。
-以下のYouTube動画の文字起こしをもとに、日本語で3つの成果物をJSONで生成してください。
+**添付したYouTube動画を視聴し**、その内容をもとに日本語で3つの成果物をJSONで生成してください。
 
 # 元動画
 タイトル: {video.title}
 チャンネル: {video.channel_name}
 URL: {video.url}
 
-# 文字起こし（自動字幕のため誤りを含む可能性があります。文脈で補完してください）
-\"\"\"
-{src}
-\"\"\"
+# 重要
+- 動画の音声と映像の実際の内容に忠実に。推測で事実を作らない。
+- 動画が長い場合も、全体の要点・流れを押さえる。
 
 # 生成する3つの成果物
 
@@ -101,7 +105,6 @@ URL: {video.url}
 
 
 def _response_schema():
-    """google-genai 用のレスポンススキーマ。"""
     try:
         from google.genai import types  # noqa: PLC0415
     except ImportError:
@@ -127,8 +130,30 @@ def _response_schema():
     )
 
 
-@retry(attempts=5, base_delay=4.0)
-def _call_gemini(client, model: str, prompt: str) -> str:
+def _media_resolution(settings: Settings):
+    """設定の解像度文字列を MediaResolution enum に変換（無料枠のトークン節約に LOW 既定）。"""
+    from google.genai import types  # noqa: PLC0415
+
+    name = str(settings.get("gemini.media_resolution", "low")).lower()
+    return {
+        "low": types.MediaResolution.MEDIA_RESOLUTION_LOW,
+        "medium": types.MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+        "high": types.MediaResolution.MEDIA_RESOLUTION_HIGH,
+    }.get(name, types.MediaResolution.MEDIA_RESOLUTION_LOW)
+
+
+def _is_quota_error(exc: BaseException) -> bool:
+    s = str(exc)
+    return "429" in s or "RESOURCE_EXHAUSTED" in s or "quota" in s.lower()
+
+
+def _is_access_error(exc: BaseException) -> bool:
+    s = str(exc).lower()
+    return any(k in s for k in ("not accessible", "permission", "private", "unsupported", "invalid argument", "400"))
+
+
+@retry(attempts=4, base_delay=10.0)
+def _call_gemini(client, model: str, settings: Settings, url: str, prompt: str) -> str:
     from google.genai import types  # noqa: PLC0415
 
     config = types.GenerateContentConfig(
@@ -136,8 +161,13 @@ def _call_gemini(client, model: str, prompt: str) -> str:
         response_schema=_response_schema(),
         temperature=0.9,
         max_output_tokens=8192,
+        media_resolution=_media_resolution(settings),
     )
-    resp = client.models.generate_content(model=model, contents=prompt, config=config)
+    contents = types.Content(parts=[
+        types.Part(file_data=types.FileData(file_uri=url, mime_type="video/*")),
+        types.Part(text=prompt),
+    ])
+    resp = client.models.generate_content(model=model, contents=contents, config=config)
     text = getattr(resp, "text", None)
     if not text:
         raise RuntimeError("Gemini応答が空でした")
@@ -156,7 +186,6 @@ def _parse(text: str, host_names: list[str]) -> GeneratedContent:
         line = str(turn.get("text", "")).strip()
         if not line:
             continue
-        # 話者名がホスト名以外なら先頭ホストに寄せる
         if speaker not in valid:
             speaker = host_names[0]
         script.append({"speaker": speaker, "text": line})
@@ -168,21 +197,28 @@ def _parse(text: str, host_names: list[str]) -> GeneratedContent:
     )
 
 
-def generate(settings: Settings, video, transcript: str) -> GeneratedContent:
-    """動画の文字起こしから台本・記事・ティーザーを生成。"""
+def generate(settings: Settings, video) -> GeneratedContent:
+    """YouTube動画URLをGeminiに視聴させ、台本・記事・ティーザーを生成。"""
     client = _get_client()
     model = settings.get("gemini.text_model", "gemini-2.5-flash")
-    prompt = _build_prompt(settings, video, transcript)
+    prompt = _build_prompt(settings, video)
     host_names = [h.name for h in settings.hosts] or ["ナミ", "ケンタ"]
 
-    log.info("Gemini生成中（model=%s）: %s", model, video.title)
-    text = _call_gemini(client, model, prompt)
+    log.info("Gemini生成中（動画視聴 / model=%s）: %s", model, video.title)
+    try:
+        text = _call_gemini(client, model, settings, video.url, prompt)
+    except Exception as exc:  # noqa: BLE001
+        if _is_quota_error(exc):
+            raise QuotaExceeded(str(exc)) from exc
+        if _is_access_error(exc):
+            raise VideoNotAccessible(str(exc)) from exc
+        raise
+
     content = _parse(text, host_names)
 
     if not content.script:
         raise RuntimeError("対話台本が空でした")
     if not content.article_html:
-        # 記事が空なら台本から最低限のフォールバック本文を作る
         content.article_html = "<p>" + "</p><p>".join(
             t["text"] for t in content.script
         ) + "</p>"
