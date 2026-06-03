@@ -156,18 +156,33 @@ def _is_access_error(exc: BaseException) -> bool:
 def _call_gemini(client, model: str, settings: Settings, url: str, prompt: str) -> str:
     from google.genai import types  # noqa: PLC0415
 
+    # gemini-2.5系は思考(thinking)トークンも出力枠を消費するため、
+    # 台本+長文記事が途中で切れないよう出力上限を十分に取り、思考量を抑える。
+    max_out = int(settings.get("gemini.max_output_tokens", 32768))
+    thinking_budget = int(settings.get("gemini.thinking_budget", 8192))
+
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=_response_schema(),
         temperature=0.9,
-        max_output_tokens=8192,
+        max_output_tokens=max_out,
         media_resolution=_media_resolution(settings),
+        thinking_config=types.ThinkingConfig(thinking_budget=thinking_budget),
     )
     contents = types.Content(parts=[
         types.Part(file_data=types.FileData(file_uri=url, mime_type="video/*")),
         types.Part(text=prompt),
     ])
     resp = client.models.generate_content(model=model, contents=contents, config=config)
+
+    # 出力打ち切り（MAX_TOKENS）を検出して明示的に失敗させる（リトライ対象）
+    try:
+        finish = str(resp.candidates[0].finish_reason)
+    except (AttributeError, IndexError, TypeError):
+        finish = ""
+    if "MAX_TOKENS" in finish:
+        raise RuntimeError(f"出力がmax_output_tokens({max_out})で打ち切られました")
+
     text = getattr(resp, "text", None)
     if not text:
         raise RuntimeError("Gemini応答が空でした")
@@ -175,7 +190,13 @@ def _call_gemini(client, model: str, settings: Settings, url: str, prompt: str) 
 
 
 def _parse(text: str, host_names: list[str]) -> GeneratedContent:
-    data = json.loads(text)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"Gemini応答のJSON解析に失敗（出力が途中で切れた可能性 / "
+            f"gemini.max_output_tokens を増やしてください）: {exc}"
+        ) from exc
     script_raw = data.get("podcast_script", []) or []
     valid = set(host_names)
     script: list[dict[str, str]] = []
