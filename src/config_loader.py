@@ -75,6 +75,10 @@ class Settings:
         return f"https://{user}.github.io/{repo}/"
 
     @property
+    def exclude_shorts(self) -> bool:
+        return bool(self.get("filters.exclude_shorts", True))
+
+    @property
     def tts_priority(self) -> list[str]:
         return list(self.get("tts.priority", ["gemini", "edge"]))
 
