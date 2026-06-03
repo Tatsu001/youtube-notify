@@ -79,6 +79,10 @@ class Settings:
         return bool(self.get("filters.exclude_shorts", True))
 
     @property
+    def max_generations_per_run(self) -> int:
+        return int(self.get("generation.max_per_run", 3))
+
+    @property
     def tts_priority(self) -> list[str]:
         return list(self.get("tts.priority", ["gemini", "edge"]))
 

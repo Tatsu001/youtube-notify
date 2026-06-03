@@ -1,0 +1,38 @@
+name: Diagnose (tech check)
+
+# 技術検証専用。生成・通知・コミットは行わない（外部依存の到達性のみ確認）。
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - 'scripts/diagnose.py'
+      - '.github/workflows/diagnose.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diagnose
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run diagnostics
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/diagnose.py
