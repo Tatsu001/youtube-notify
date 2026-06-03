@@ -143,9 +143,38 @@ def test_gemini() -> None:
         line(f"[FAIL] {type(e).__name__}: {str(e)[:200]}")
 
 
+def test_gemini_youtube() -> None:
+    header("5. Gemini × YouTube URL 直接理解（最重要・代替案の検証）")
+    if not os.environ.get("GEMINI_API_KEY"):
+        line("[SKIP] GEMINI_API_KEY 未設定")
+        return
+    from google import genai
+    from google.genai import types
+    from src.config_loader import load_settings
+
+    model = load_settings().get("gemini.text_model", "gemini-2.5-flash")
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+    # 短い動画（TBSニュース）と長い動画（松田トーク）の両方で、長さ上限の有無も確認
+    for label, vid in TEST_VIDEOS:
+        url = f"https://www.youtube.com/watch?v={vid}"
+        try:
+            resp = client.models.generate_content(
+                model=model,
+                contents=types.Content(parts=[
+                    types.Part(file_data=types.FileData(file_uri=url)),
+                    types.Part(text="この動画の内容を日本語で2〜3文で具体的に要約してください。"),
+                ]),
+            )
+            txt = (resp.text or "").strip().replace("\n", " ")
+            line(f"[{'PASS' if txt else 'FAIL'}] {label} {vid}: {txt[:240]}")
+        except Exception as e:  # noqa: BLE001
+            line(f"[FAIL] {label} {vid}: {type(e).__name__}: {str(e)[:280]}")
+
+
 def main() -> None:
     line("YouTube-notify 技術検証 / 診断")
-    for fn in (test_env, test_rss_direct, test_fetch_channel, test_transcripts, test_gemini):
+    for fn in (test_env, test_rss_direct, test_fetch_channel, test_transcripts, test_gemini, test_gemini_youtube):
         try:
             fn()
         except Exception:  # noqa: BLE001
