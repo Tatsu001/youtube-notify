@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.Python
+
+# 秘密情報（絶対にコミットしない）
+.env
+*.env
+secrets.*
+*-key.json
+credentials.json
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 一時ファイル
+*.tmp
+*.log
+tmp/
+state/processed.json.tmp
