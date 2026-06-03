@@ -17,17 +17,19 @@
 ## 仕組みの概要
 
 ```
-YouTube RSS  ──►  新着抽出  ──►  字幕取得  ──►  Gemini生成 ─┬─► 対話台本(A) ─► TTS ─► MP3
-(APIキー不要)     (state参照)   (字幕API/yt-dlp)            ├─► 読み物記事(B) ─► HTMLページ
-                                                          └─► ティーザー(C) ─► LINE通知
+YouTube RSS  ──►  新着抽出  ──►  Gemini が動画URLを視聴 ─┬─► 対話台本(A) ─► TTS ─► MP3
+(RSS→yt-dlp)      (state参照)   (gemini-2.5-flash)        ├─► 読み物記事(B) ─► HTMLページ
+                                                         └─► ティーザー(C) ─► LINE通知
                                                                   │
                        一覧ページ / RSSフィード を再生成 ◄─────────┘
                                   │
                      GitHub Actions が docs/ をコミット&push ─► GitHub Pages で公開
 ```
 
-- **動画情報の取得は YouTube の RSS フィード**（`.../feeds/videos.xml?channel_id=...`）を使います。YouTube Data API のキーやクォータは不要です。
-- **テキスト生成は Gemini API**（`gemini-2.5-flash`・無料枠）。1動画につき構造化した1回の呼び出しで台本・記事・ティーザーをまとめて生成します。
+- **動画一覧の取得は YouTube RSS（失敗時は yt-dlp にフォールバック）**。YouTube Data API のキーやクォータは不要です。
+- **内容理解＋テキスト生成は Gemini API**（`gemini-2.5-flash`・無料枠）。**動画のURLを Gemini に直接渡して動画そのものを視聴させ**、1回の構造化呼び出しで台本・記事・ティーザーをまとめて生成します。
+  - GitHub Actions のIPからは**字幕取得APIがYouTubeにブロックされる**ため、字幕に依存しない「Geminiに動画を見せる」方式を採用しました（Google側が動画を取得するのでIPブロックを受けません。1時間級の動画も処理可能なことを実機で確認済み）。
+  - 無料枠保護のため、動画解像度LOW・**1実行あたりの生成上限**（`generation.max_per_run`）・429時は次回実行へ自動継続、という制御を入れています。
 - **音声合成（TTS）は2段フォールバック**:
   1. **Gemini 多話者TTS**（NotebookLM風の自然な掛け合い。無料枠/Preview制限あり）
   2. **edge-tts**（Microsoft Edge読み上げ。アカウント不要・完全無料。最終フォールバック）
@@ -63,7 +65,10 @@ channels:
 | `tts.priority` | TTSエンジンの優先順位（`gemini` → `edge`） |
 | `tts.audio_bitrate` | MP3ビットレート（既定 `64k`。リポジトリ肥大防止） |
 | `gemini.text_model` / `gemini.tts_model` | 使用モデル（利用不可なら差し替え可能） |
+| `gemini.media_resolution` | 動画解像度 `low`/`medium`/`high`（既定 `low`。無料枠トークン節約） |
 | `gemini.script_max_chars` / `article_min/max_chars` | 台本・記事の目安文字数 |
+| `generation.max_per_run` | 1実行あたりの生成上限（既定3。超過は次回実行で続行＝無料枠保護） |
+| `filters.exclude_shorts` | YouTube Shorts を除外（既定 `true`） |
 | `line.mode` | `broadcast`（既定・宛先不要）/ `push`（userId指定） |
 | `retention.keep_audio_count` / `min_audio_keep` | 残すMP3本数（既定50本・最低3本） |
 

@@ -192,7 +192,9 @@ python scripts/demo_tts.py
 | ログに `GEMINI_API_KEY 未設定` | Secrets に `GEMINI_API_KEY` が登録されているか確認（手順2）。 |
 | ログに `LINE ... 未設定` で通知が来ない | Secrets に `LINE_CHANNEL_ACCESS_TOKEN` を登録（手順3）。トークンは「長期」を発行したか確認。 |
 | LINEは送れているが届かない | 公式アカウントを**友だち追加**したか確認（手順3-3）。`broadcast` は友だちにのみ届きます。 |
-| `字幕を取得できずスキップ` のLINEが来る | その動画に字幕（自動字幕含む）が無く生成できません。仕様どおりスキップし記録します（無限リトライしません）。 |
+| `動画を視聴できずスキップ` のLINEが来る | 非公開・限定公開・年齢制限などで Gemini が視聴できない動画です。仕様どおりスキップし記録します（無限リトライしません）。 |
+| `Gemini無料枠の上限(429)に到達` のLINEが来る | 無料枠のレート上限です。**今回はそこまで生成し、残りは次回実行で自動継続**します（異常ではありません）。1実行あたりの本数は `settings.yaml` の `generation.max_per_run` で調整可能。高頻度チャンネル（例: TBS）は消費が大きいので注意。 |
+| 生成が少しずつしか進まない | 無料枠保護のため**1実行で最大 `generation.max_per_run` 本**（既定3）まで。6時間ごとの実行で順次消化されます。長尺動画はトークン消費が大きいため `gemini.media_resolution` は `low` 既定です。 |
 | Pagesが404 | `Settings → Pages` のSourceが `main` / `/docs` か、URLが `settings.yaml` の `github_user`/`repo_name` と一致しているか確認。反映に数分かかることがあります。 |
 | 音声が古いものから消えている | `retention.keep_audio_count`（既定50）を超えたMP3は自動削除されます。記事ページは残り、フィードからは該当音声リンクが外れます。`settings.yaml` で本数を変更可能。 |
 | Gemini TTSが使われずedge-ttsになる | Gemini TTSの無料枠/Preview上限に達した可能性。**仕様どおり自動フォールバック**しており問題ありません。優先順位は `settings.yaml` の `tts.priority` で調整可能。 |
