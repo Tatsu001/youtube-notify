@@ -16,7 +16,18 @@
     <itunes:category text="Technology"/>
     <itunes:explicit>false</itunes:explicit>
     <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="https://tatsu001.github.io/youtube-notify/feed.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Thu, 11 Jun 2026 10:51:35 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 11 Jun 2026 16:23:29 +0000</lastBuildDate>
+    <item>
+      <title>特番『表現の自由を守れ！ならぬ！恣意的な選挙中のSNS規制』報道アナリスト　新田哲史氏</title>
+      <link>https://tatsu001.github.io/youtube-notify/episodes/mjxK7lxe_RI.html</link>
+      <guid isPermaLink="false">mjxK7lxe_RI</guid>
+      <pubDate>Thu, 11 Jun 2026 11:30:15 +0000</pubDate>
+      <description>選挙中のSNS規制議論の深層：表現の自由と情報操作の狭間で近年、SNSは政治の舞台において、有権者と候補者をつなぐ重要な情報伝達手段としてその存在感を増しています。しかし、その影響力の増大とともに、選挙期間中のSNS利用…</description>
+      <itunes:summary>選挙中のSNS規制議論の深層：表現の自由と情報操作の狭間で近年、SNSは政治の舞台において、有権者と候補者をつなぐ重要な情報伝達手段としてその存在感を増しています。しかし、その影響力の増大とともに、選挙期間中のSNS利用…</itunes:summary>
+      <itunes:author>youtube-notify</itunes:author>
+      <enclosure url="https://tatsu001.github.io/youtube-notify/audio/mjxK7lxe_RI.mp3" length="2371437" type="audio/mpeg"/>
+      <itunes:explicit>false</itunes:explicit>
+    </item>
     <item>
       <title>【松田学のニュース解説】壊し屋？トランプ大統領の動向と国際社会で不興を買う中国</title>
       <link>https://tatsu001.github.io/youtube-notify/episodes/1z2CcjXpDdE.html</link>
@@ -109,7 +120,7 @@
       <title>【松田学のニュース解説】同盟国へ軍事要請強める米トランプ政権の足元は？＆高まる中朝核の脅威</title>
       <link>https://tatsu001.github.io/youtube-notify/episodes/A9z1ETVfRH0.html</link>
       <guid isPermaLink="false">A9z1ETVfRH0</guid>
-      <pubDate>Thu, 11 Jun 2026 10:51:35 +0000</pubDate>
+      <pubDate>Thu, 11 Jun 2026 16:23:29 +0000</pubDate>
       <description>【松田学のニュース解説】同盟国へ軍事要請強める米トランプ政権の足元は？＆高まる中朝核の脅威今回の「松田学のニュース解説」では、緊迫する国際情勢の多角的な側面を深掘りします。特に、アメリカのトランプ政権が同盟国に軍事費の増…</description>
       <itunes:summary>【松田学のニュース解説】同盟国へ軍事要請強める米トランプ政権の足元は？＆高まる中朝核の脅威今回の「松田学のニュース解説」では、緊迫する国際情勢の多角的な側面を深掘りします。特に、アメリカのトランプ政権が同盟国に軍事費の増…</itunes:summary>
       <itunes:author>youtube-notify</itunes:author>
