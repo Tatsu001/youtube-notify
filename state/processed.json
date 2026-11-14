@@ -2306,6 +2306,17 @@
       "status": "skipped",
       "has_audio": false,
       "reason": "video_not_accessible"
+    },
+    "GjSECLLYszA": {
+      "title": "特番『これからの政治に必要なのは出口設計　対立だけでは何も生まれない　調和の国ニッポンだからできる』ゲスト：国史啓蒙家　小名木善行氏",
+      "published": "2026-11-14T12:00:16+00:00",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=GjSECLLYszA",
+      "generated_at": "2026-11-14T13:25:41.128078+00:00",
+      "status": "skipped",
+      "has_audio": false,
+      "reason": "video_not_accessible"
     }
   }
 }
