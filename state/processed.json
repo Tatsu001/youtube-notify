@@ -2405,6 +2405,17 @@
       "status": "skipped",
       "has_audio": false,
       "reason": "video_not_accessible"
+    },
+    "_ZCulzMe6gM": {
+      "title": "【松田学のニュース解説】出口なし！イラン戦争はどう終えられるのか？中東不安定継続の構図 ウクライナ和平も会議は踊る",
+      "published": "2026-11-23T12:00:08+00:00",
+      "channel_id": "UCAN0E9cZN7n22Ka1-TuVb-Q",
+      "channel_name": "松田政策研究所チャンネル",
+      "url": "https://www.youtube.com/watch?v=_ZCulzMe6gM",
+      "generated_at": "2026-11-23T23:45:36.626843+00:00",
+      "status": "skipped",
+      "has_audio": false,
+      "reason": "video_not_accessible"
     }
   }
 }
